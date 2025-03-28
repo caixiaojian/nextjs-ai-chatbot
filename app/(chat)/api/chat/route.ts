@@ -39,7 +39,6 @@ export async function POST(request: Request) {
       messages: Array<UIMessage>;
       selectedChatModel: string;
     } = await request.json();
-
     const session = await auth();
 
     if (!session || !session.user || !session.user.id) {
@@ -81,6 +80,7 @@ export async function POST(request: Request) {
 
     return createDataStreamResponse({
       execute: (dataStream) => {
+        console.log(1)
         const result = streamText({
           model: myProvider.languageModel(selectedChatModel),
           system: systemPrompt({ selectedChatModel }),
@@ -123,7 +123,6 @@ export async function POST(request: Request) {
                   messages: [userMessage],
                   responseMessages: response.messages,
                 });
-
                 await saveMessages({
                   messages: [
                     {
@@ -147,14 +146,15 @@ export async function POST(request: Request) {
             functionId: 'stream-text',
           },
         });
-
+        console.log(2)
         result.consumeStream();
 
         result.mergeIntoDataStream(dataStream, {
           sendReasoning: true,
         });
       },
-      onError: () => {
+      onError: (error) => {
+        console.dir(error)
         return 'Oops, an error occured!';
       },
     });
